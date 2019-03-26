@@ -1,0 +1,71 @@
+#define USE_ARDUINO_INTERRUPTS true
+#include <PulseSensorPlayground.h> 
+#include <LiquidCrystal.h>
+#include <Wire.h>
+
+const int PulseWire = 0;       
+const int LED13 = 8;         
+int Threshold = 550;
+const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
+
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+PulseSensorPlayground pulseSensor;
+
+void setup_PulseSensor()
+{
+  Serial.begin(9600);
+   pulseSensor.analogInput(PulseWire);   
+  pulseSensor.blinkOnPulse(LED13);       
+  pulseSensor.setThreshold(Threshold);
+  if (pulseSensor.begin()) 
+  {
+    Serial.println("We created a pulseSensor Object !");
+  }
+}
+
+void setup_LCD()
+{
+  lcd.begin(16, 2);
+}
+
+int BPM()
+{
+  int myBPM = pulseSensor.getBeatsPerMinute();
+  //delay(50);
+  return myBPM;
+}
+
+
+void LCD()
+{
+  Serial.print("BPM:");
+  Serial.print(BPM());
+  Serial.print("\n");
+  lcd.setCursor(0, 0);
+  lcd.print("<3 BPM :");
+  lcd.print(BPM());
+  delay(1000);
+  lcd.clear(); ;
+}
+
+void setup() 
+{
+  setup_PulseSensor();
+  setup_LCD();
+  
+}
+
+void loop() 
+{
+  Wire.begin(1);                
+  Wire.onRequest(requestEvent);
+  LCD();
+  delay(50);
+}
+
+void requestEvent() 
+{
+  Wire.write(BPM());
+}
+
+ 
